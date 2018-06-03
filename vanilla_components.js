@@ -117,7 +117,7 @@ function loadComplements(){
   for(component of component_cache["vc_components"]){
     constructComponent(component[0],component[1]);
   }
-  //console.log(document);
+  console.log(document);
 }
 
 var listOfComponents = [];
@@ -212,15 +212,101 @@ function constructComponent(component_name, component){
 
 /*This function recreates all the from_element's attributes on to_element. This
 allows the dev to set differentiating attributes to two instances of the same
-component.*/
+component. There are three rules you should know for passing on attributes.
+
+First, any attributes given to the component call, but not referred to within the
+the component html, then it is moved to the first element of the component. So,
+a component named "foo" with the following html:
+  <div>
+    <div>
+    </div>
+  </div>
+when called as <vc class="one two three">foo</vc> will inject as
+  <div class="one two three">
+    <div>
+    </div>
+  </div>
+
+Second, any attribute given to the vc declaration is moved to a place, within the
+component, where the attribute is given (without value). So, a component named
+"foo" with the following html:
+  <div>
+    <div class>
+    </div>
+  </div>
+when called as <vc class="one two three">foo</vc> will render as
+  <div>
+    <div class=vc class="one two three">
+    </div>
+  </div>
+
+Thirdly and finally, you may pass attributes as variables starting with $. This
+allows you to pass multiple of the same attribute to different elements. So, a
+component named "foo" with the following html:
+  <div class=$outeclass>
+    <div class=$innerclass>
+    </div>
+  </div>
+when called as <vc $outerclass="one" $innerclass="two">foo</vc> will render as
+  <div class="one">
+    <div class="two">
+    </div>
+  </div>
+*/
+
+
+//cloneAttributes(component,inserted_component);
 function cloneAttributes(from_element,to_element){
   var attrib = null;
-  for(i=0;i<from_element.attributes.length;i++){
-    var attrib = from_element.attributes[i];
-    if(attrib.name=="class"){
-      to_element.setAttribute(attrib.name, attrib.value+" "+to_element.className);
+  var to_el = [to_element];
+  var attributes = [];
+
+  //list of all elements in to_element
+  for(i=0;i<to_element.children.length;i++)
+    to_el.push(to_element.children[i]);
+  //list of all attributes in from_element
+  for(i=0;i<from_element.attributes.length;i++)
+    attributes.push(from_element.attributes[i]);
+
+
+  for( attribute of attributes){
+
+    //There are two main rules for dealing with attributes: either they are
+    //plain or variables (which starts with $). Let's deal with them sepparately.
+
+    if(attribute.name.charAt(0)=="$"){
+
+      to_element.outerHTML = to_element.outerHTML.replaceAll(attribute.name, attribute.value);
+
+      //If no element was set to receive the attribute, none receives it
+      //(because we only know the attribute's value, not the name, so we cannot
+      //set it to a default).
+
     } else {
-      to_element.setAttribute(attrib.name, attrib.value);
+      //Check if attribute is called from within to_component
+      var was_called=false;
+      for( el of to_el ){
+
+        //If an element is found to have the attribute, it becomes the target
+        if(el.hasAttribute(attribute.name)){
+          if(attribute.name == "class"){
+            el.setAttribute(attribute.name,el.getAttribute(attribute.name)+" "+attribute.value);
+          } else {
+            el.removeAttribute(attribute.name);
+            el.setAttribute(attribute.name,attribute.value);
+          }
+          was_called=true;
+        }      
+      }
+      //If no element was set to receive the attribute, default to 1st element
+      if(!was_called) to_el[0].setAttribute(attribute.name,attribute.value);
+
+
     }
   }
+}
+
+String.prototype.replaceAll = function(search,replace){
+  if (this.indexOf(search)===-1) return this;
+  return (this.replace(search,replace)).replaceAll(search,replace);
 }
