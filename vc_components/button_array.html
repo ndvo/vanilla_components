@@ -1,0 +1,35 @@
+<div class="vc_button_array">
+  <p>ahoy</p>
+</div>
+
+<style>
+  .vc_button_array>button{
+    border-radius:0;
+    border-right: 1px #bbb solid;
+  }
+  .vc_button_array>button:first-child{
+    border-radius: 6px 0 0 6px;
+  }
+  .vc_button_array>button:last-child{
+    border-radius: 0 6px 6px 0;
+    border-right: none;
+  }
+</style>
+
+<script>
+  function vc_button_array(c){
+    var labels = c.getAttribute("labels").split(";");
+    c.innerHTML = "";
+    for(let label of labels){
+      //console.log("btn: "+label);
+      c.innerHTML += "<vc $label="+label+">button</vc>";
+      }
+    var new_search = new VCSearch();
+    new_search.loadComponent(c);
+  }
+</script>
+
+<!--
+REQUIRED VC COMPONENTS:
+button
+-->

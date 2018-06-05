@@ -1,0 +1,52 @@
+<button type="button" class="vc_button" >$label</button>
+<!-- onClick="on_click(this)" -->
+
+<style>
+  .vc_button{
+    font-family: sans-serif;
+    font-size: 14px;
+    padding: 7px 28px 4px;
+    margin: none;
+    border: none;
+    min-height: 40px;
+    min-width: 80px;
+    border-radius: 6px;
+    box-sizing: border-box;
+    background-color: #ddd;
+  }
+  .vc_button:focus{
+    outline: none;
+    border-top:  4px #ccc solid;
+    border-bottom:  4px #ccc solid;
+    z-index: 1;
+  }
+  .vc_button:active{
+    outline: none;
+    background-color: #ccc;
+    z-index: 1;
+  }
+</style>
+
+<script>
+
+  function vc_button(c){
+    //console.log("C",c);
+    //c.onclick = function(){console.log("clicked");}
+    // c.addEventListener("click", function(){
+    //   console.log("btn clicked");
+    // });
+    console.log('>',document.querySelector('.vc_button'));
+    console.log('c',c);
+    var d = document.querySelector('.vc_button');
+    d.onclick = function(){console.log('mmm');};
+    c.onclick = function(){console.log('mmm');};
+    // c.addEventListener("click", function(){console.log('out');});
+    //TSCTSC BUGGY
+
+  }
+  function on_click(c){
+    console.log('in');
+    // console.log('c',c);
+    c.style.backgroundColor = "red";
+  }
+</script>
