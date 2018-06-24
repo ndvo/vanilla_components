@@ -20,12 +20,12 @@ allows for the construction of complex features by reusing simple building
 blocks.
 
 You can pass information down to the component by declaring attributes. For
-example, <vc class="foo">button</vc> will pass down class="foo". Speciffically,
+example, `<vc class="foo">button</vc>` will pass down class="foo". Speciffically,
 it will add the class to a component that has the class attribute - or if it
 doesn't find any, it will pass the attribute to the first markup element.
 
 You may also pass down variables, by creating an arbitrary attribute starting
-with '$'. For example, <vc $var="foo">button</vc> will substitute any
+with '$'. For example, `<vc $var="foo">button</vc>` will substitute any
 occurrence of '$var' within the markup to 'foo'.
 
 Finally, once the component is loaded, it calls a construct function called
@@ -35,12 +35,12 @@ this function is used to load complex data when needed.
 ## OK, BUT WHY?
 
 Reusing code via components is the reality of web dev. It is usually done using
-frameworks, but those bring in many, many more features that you might not want
-- they may even dictate how you must structure your project, which is quite
+frameworks, but those bring in many, many more features that you might not want - 
+they may even dictate how you must structure your project, which is quite
 demanding. Also, html is commonly built in the backend through adding templates
 together, which is helpful to say the least. VC allows you to do the same on
 the frontend: you can create, say, the header, footer, sidebars as components
-and easily inject them into your html as <vc>header</vc>, for example. This
+and easily inject them into your html as `<vc>header</vc>`, for example. This
 makes the creation of serverless frameworkless pages easy and fun.
 
 ## REQUIREMENTS
@@ -85,7 +85,7 @@ collections of components.
 </html>
 ```
 
-** vanilla_components/hello.html
+** vanilla_components/hello.html **
 
 ```html
 <h1>Hello World</h1>
