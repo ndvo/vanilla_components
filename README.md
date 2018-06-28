@@ -79,7 +79,7 @@ collections of components.
 
 ### Hello World
 
-** index.html **
+**index.html**
 
 ```html
 <html>
@@ -90,7 +90,7 @@ collections of components.
 </html>
 ```
 
-** vanilla_components/hello.html **
+**vanilla_components/hello.html**
 
 ```html
 <h1>Hello World</h1>
