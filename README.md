@@ -6,21 +6,21 @@ code.
 ## HOW DOES IT WORK?
 
 You save components in a folder called vc_components. Each component is an html
-file containing three separate root elements: 1) the first is the markup (could
-be a div, button, p, a, whatever you like); 2) the second is a style tag for
-storing the component's CSS; and 3) the third is a script tag for code related
-to the component.
+file containing three separate root elements:
+1. the first is the markup (could be a div, button, p, a, whatever you like); 
+1. the second is a style tag for storing the component's CSS; and
+1. the third is a script tag for code related to the component.
 
-You can call the component using the <vc> tag. For example, <vc>button</vc>
-would load the button.html component. It substitutes the <vc> element by the
+You can call the component using the `<vc>` tag. For example, `<vc>button</vc>`
+would load the button.html component. It substitutes the `<vc>` element by the
 component's markup, then injects the component's css and script.
 
-You can also declare components within components using the <vc> tag. This
+You can also declare components within components using the `<vc>` tag. This
 allows for the construction of complex features by reusing simple building
 blocks.
 
 You can pass information down to the component by declaring attributes. For
-example, `<vc class="foo">button</vc>` will pass down class="foo". Speciffically,
+example, `<vc class="foo">button</vc>` will pass down `class="foo"`. Speciffically,
 it will add the class to a component that has the class attribute - or if it
 doesn't find any, it will pass the attribute to the first markup element.
 
@@ -29,7 +29,7 @@ with '$'. For example, `<vc $var="foo">button</vc>` will substitute any
 occurrence of '$var' within the markup to 'foo'.
 
 Finally, once the component is loaded, it calls a construct function called
-vc_[component's name](), which allows you to refine it. It is proposed that
+`vc_[component's name]()`, which allows you to refine it. It is proposed that
 this function is used to load complex data when needed.
 
 ## OK, BUT WHY?
@@ -69,6 +69,11 @@ only if a component from that collection would be included. This allows
 multiple components in a folder to share css, making it easier to develop
 collections of components.
 
+## INSTALATION AND USAGE
+
+1. Download vanilla_components and unzip it into the root folder of your site.
+1. Create a folder named vc_components in the root of your website
+1. Include the following tag **before** your custom script tags `<script src="/vanilla_components/vanilla_components.js" ></script>`
 
 ## Examples
 
