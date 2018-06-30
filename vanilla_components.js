@@ -55,8 +55,18 @@ class VCSearch{
 
     if(htmlDoc){
       //Get markup and add to cache
-      markup = htmlDoc.firstChild.childNodes[1].children[0].outerHTML;
-      this.component_cache[component.innerHTML] = markup;
+      for( let i of [htmlDoc,htmlDoc.firstChild,htmlDoc.firstChild.childNodes[1],htmlDoc.firstChild.childNodes[1].children[0]]){
+        console.log(i);
+      }
+
+      if( htmlDoc.firstChild.childNodes[1].tagName == "BODY"){
+        markup = htmlDoc.firstChild.childNodes[1].children[0].outerHTML;
+        this.component_cache[component.innerHTML] = markup;
+      } else {
+        markup = htmlDoc.children[0].outerHTML;
+        this.component_cache[component.innerHTML] = markup;
+      }
+
     } else {
       //Get markup
       markup = this.component_cache[name];
@@ -110,14 +120,16 @@ class VCSearch{
 
   //Adds the style and script
   loadComplements(){
+    console.log('10');
     this.injectCSS();
     this.injectJS();
     // for(var component of this.component_cache["vc_components"]){
     //   this.constructComponent(component[0],component[1]);
     // }
-
+    console.log('11');
     this.constructComponents();
     console.log(document);
+    console.log('12');
   }
 
   /*As components are loaded, more components may be nested within their code.
@@ -154,6 +166,8 @@ class VCSearch{
         var script = all_scripts[i];
         if(script.getAttribute("src")=="vanilla_components.js")
           continue;
+        if(script.getAttribute("src")!="vc")
+          continue;
         var substitute = document.createElement('script');
         if(script.getAttribute("src")!=null)
           substitute.setAttribute("src", script.getAttribute("src"));
@@ -163,6 +177,8 @@ class VCSearch{
         document.body.removeChild(script);
       }
     }
+
+
 
     // /*Call a function named vc_[component's name](component) as a constructor when
     // the component is loaded.*/
