@@ -100,12 +100,18 @@ class VCSearch{
           component.parentNode.removeChild( component );
 
           //Code must be delt with first to avoid breaking event handlers.
-          var script = htmlDoc.getElementsByTagName("script")[0].innerHTML;
-          vc.component_cache['vc_script'] += script;
+          let items = htmlDoc.getElementsByTagName("script");
+          if (items.length!=0){
+            var script = items[0].innerHTML;
+            vc.component_cache['vc_script'] += script;
+          }
 
           //Style is cached.
-          var style = htmlDoc.getElementsByTagName("style")[0].innerHTML;
-          vc.component_cache['vc_style'] += style;
+          items = htmlDoc.getElementsByTagName("style");
+          if (items.length!=0){
+            var style = items[0].innerHTML;
+            vc.component_cache['vc_style'] += style;
+          }
 
           if(vc.listOfComponents.length>0)
             vc.loadComponent();
@@ -127,7 +133,6 @@ class VCSearch{
     for(var component of this.component_cache["vc_components"]){
       this.constructComponent(component[0],component[1]);
     }
-    console.log(document);
   }
 
   //As components are loaded, more components may have been included inside their code.
