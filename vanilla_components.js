@@ -39,7 +39,7 @@ page to use VC. Luckily, you can do it easy as pie with python's SimpleHTTPServe
 */
 
 class VCSearch{
-  constructor(codeBlock=document, path="/vc_components/"){
+  constructor(codeBlock=document, path="vc_components/"){
     this.codeBlock = codeBlock;
     this.components_path = path;
     this.component_cache = {"vc_script":"","vc_style":"","vc_components":[]};
