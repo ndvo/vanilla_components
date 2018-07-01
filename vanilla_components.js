@@ -1,5 +1,6 @@
 class VCSearch{
-  constructor(codeBlock=document, path="vc_components/"){
+  constructor(codeBlock=document, path="/vc_components/"){
+
     this.codeBlock = codeBlock;
     this.components_path = path;
     this.component_cache = {"vc_script":"","vc_style":"","vc_components":[]};
@@ -49,20 +50,19 @@ class VCSearch{
   the basic document from cache.*/
 
   processNewComponent(component, htmlDoc=false){
+
+
     var name = component.innerHTML;
     var inserted_component = null;
     var markup = "";
 
     if(htmlDoc){
       //Get markup and add to cache
-      for( let i of [htmlDoc,htmlDoc.firstChild,htmlDoc.firstChild.childNodes[1],htmlDoc.firstChild.childNodes[1].children[0]]){
-        console.log(i);
-      }
-
-      if( htmlDoc.firstChild.childNodes[1].tagName == "BODY"){
+      //if( htmlDoc.firstChild.childNodes[1].tagName == "BODY"){
+      if( htmlDoc.firstChild.childNodes[1] ){//Is a full html
         markup = htmlDoc.firstChild.childNodes[1].children[0].outerHTML;
         this.component_cache[component.innerHTML] = markup;
-      } else {
+      } else {//Is just an element
         markup = htmlDoc.children[0].outerHTML;
         this.component_cache[component.innerHTML] = markup;
       }
@@ -73,26 +73,30 @@ class VCSearch{
     }
 
     //Insert the markup just before the <vc> tag, and clone the attributes
-    component.insertAdjacentHTML( 'beforebegin', markup );  //Alas, this func doesn't return inserted
-    inserted_component = this.get_inserted( component );    //So this one gets the immediate element before (which we just inserted)
 
-    this.cloneAttributes( component, inserted_component );  //Reproduce the attributes on the inserted
-    //console.log('component check',inserted_component);
+    inserted_component = this.switchContents(component,markup);
+    this.component_cache["vc_components"].push( [name, inserted_component] );//For us to inject style and code later on
+    this.addComponentsToQueue( inserted_component );//For us to inject the html ASAP
 
-    //Add the new component to cache and queue it for parsing
-    this.component_cache["vc_components"].push( [name, inserted_component] ); //For us to inject style and code later on
-    this.addComponentsToQueue( inserted_component );    //For us to inject the html ASAP
-
-    //We add an attribute "vc" so it remembers is was created from a vc tag
-    //and a disposable "vc_constructor" to keep track of running the function.
+    // component.insertAdjacentHTML( 'beforebegin', markup );  //Alas, this func doesn't return inserted
+    // inserted_component = this.get_inserted( component );    //So this one gets the immediate element before (which we just inserted)
+    //
+    // console.log("elements",component, inserted_component);
+    // this.cloneAttributes( component, inserted_component );  //Reproduce the attributes on the inserted
+    // //Add the new component to cache and queue it for parsing
+    // this.component_cache["vc_components"].push( [name, inserted_component] ); //For us to inject style and code later on
+    // this.addComponentsToQueue( inserted_component );    //For us to inject the html ASAP
+    // //We add an attribute "vc" so it remembers is was created from a vc tag
+    // //and a disposable "vc_constructor" to keep track of running the function.
     inserted_component.setAttribute("vc", name);    //Stub for possible future use
     inserted_component.setAttribute("vc_c", name);  //We use it to run constructors
+
+
     //inserted_component.setAttribute("testing", "testing");  //We use it to run constructors
 
 
-    //Now we remove the original <vc> element
-    component.parentNode.removeChild( component );
-
+    // //Now we remove the original <vc> element
+    // component.parentNode.removeChild( component );
     //If it is a new component, we must also cache its style and script
     if(htmlDoc){
       //Cache script
@@ -110,26 +114,19 @@ class VCSearch{
       this.loadCount -= 1;
       if(this.loadCount==0)
         //return null;
+        //console.log(">>>: ", component, inserted_component );
+
         this.loadComplements();
     } else {
       if(this.listOfComponents.length>0) this.loadComponent();
     }
-    // console.log("check insert attr",inserted_component);
-    console.log("!!", inserted_component);
   }
 
   //Adds the style and script
   loadComplements(){
-    console.log('10');
     this.injectCSS();
     this.injectJS();
-    // for(var component of this.component_cache["vc_components"]){
-    //   this.constructComponent(component[0],component[1]);
-    // }
-    console.log('11');
     this.constructComponents();
-    console.log(document);
-    console.log('12');
   }
 
   /*As components are loaded, more components may be nested within their code.
@@ -166,7 +163,7 @@ class VCSearch{
         var script = all_scripts[i];
         if(script.getAttribute("src")=="vanilla_components.js")
           continue;
-        if(script.getAttribute("src")!="vc")
+        if(!script.hasAttribute("vc"))
           continue;
         var substitute = document.createElement('script');
         if(script.getAttribute("src")!=null)
@@ -178,50 +175,16 @@ class VCSearch{
       }
     }
 
-
-
-    // /*Call a function named vc_[component's name](component) as a constructor when
-    // the component is loaded.*/
-    // constructComponent(component_name, component){
-    //   var constructor_function = "vc_"+component.getAttribute("vc");//component_name;
-    //   if(typeof window[constructor_function] === "function"){
-    //     window[constructor_function](component);
-    //   }
-    //   if(component_name == component.getAttribute("vc")) console.log("equal function names");
-    //   if(component_name != component.getAttribute("vc")) console.log("equal NOT function names");
-    // }
-
-    /*Go through the dom searching for injected components, and run their "constructor"
-    functions, that is, run a function named vc_[component's name](component).
-    TODO: it isn't working properly.*/
-    // constructComponents_bkp(){
-    //   var component = document.querySelector('[vc_constructor]');
-    //   if(component!=null) {
-    //     console.log("constructing... ", component.getAttribute("vc_constructor"));
-    //     var constructor_function = "vc_"+component.getAttribute("vc");
-    //     if(typeof window[constructor_function] === "function"){
-    //       window[constructor_function](component);
-    //     }
-    //
-    //     component.removeAttribute("vc_constructor");
-    //     this.constructComponents();
-    //   }
-    //   else {
-    //     console.log("Am I null?",component)
-    //   }
-    // }
-
     constructComponents(){
       var components = document.querySelectorAll('[vc_c]');
-     console.log("!>>>> ",components, components.length );
-      var component_list = [];
+      var component_list = [];console.log("1",component_list);
       var constructor_function;
 
       for(var i=0; i<components.length;i++){
         if(components[i]!=null)
           component_list.push(components[i]);
       }
-      console.log("Length of constructor: "+component_list.length);
+
       for(var component of component_list){
         constructor_function = "vc_"+component.getAttribute("vc_c");
         if(typeof window[constructor_function] === "function"){
@@ -234,54 +197,59 @@ class VCSearch{
     /*Clones the characteristics (attributes) from original <vc> element to corresponding
     injected components. This process have some peculiar cases: please refer to doc.txt.*/
     cloneAttributes(from_element,to_element){
-      var attrib = null;
-      var to_el = [to_element];
-      var attributes = [];
-
-      //list of all elements in to_element
-      for(var i=0;i<to_element.children.length;i++)
-        to_el.push(to_element.children[i]);
-      //list of all attributes in from_element
-      for(var i=0;i<from_element.attributes.length;i++)
-        attributes.push(from_element.attributes[i]);
-
-      for( var attribute of attributes){
-
-        //There are two main rules for dealing with attributes: either they are
-        //plain or variables (which starts with $). Let's deal with them sepparately.
-
+      //console.log("to el",from_element,to_element);
+      let attribute;
+      for(let i=0;i<from_element.attributes.length;i++){
+        attribute = from_element.attributes[i];
         if(attribute.name.charAt(0)=="$"){
-
-          to_element.outerHTML = to_element.outerHTML.replaceAll(attribute.name, attribute.value);
-
-          //If no element was set to receive the attribute, none receives it
-          //(because we only know the attribute's value, not the name, so we cannot
-          //set it to a default).
-
-        } else {
-          //Check if attribute is called from within to_component
-          var was_called=false;
-          for( var el of to_el ){
-
-            //If an element is found to have the attribute, it becomes the target
-            if(el.hasAttribute(attribute.name)){
-              if(attribute.name == "class"){
-                el.setAttribute(attribute.name,el.getAttribute(attribute.name)+" "+attribute.value);
-              } else {
-                el.removeAttribute(attribute.name);
-                el.setAttribute(attribute.name,attribute.value);
-              }
-              was_called=true;
-            }
-          }
-          //If no element was set to receive the attribute, default to 1st element
-          if(!was_called) to_el[0].setAttribute(attribute.name,attribute.value);
-
+          let regex_rule = new RegExp("\\"+attribute.name, 'g');
+          //to_element.outerHTML = to_element.outerHTML.replace(regex_rule, attribute.value);
         }
-      }
+      }console.log("to el after",to_element,to_element.outerHTML);
+      console.log(document);
+
     }
 
+    switchContents(element,markup){
+      //First we take note of the variables to reinsert
+      let variables=[];
+      for(let i=0;i< element.attributes.length;i++ ){
+        variables.push( [element.attributes[i].name,element.attributes[i].value] )
+      }
 
+      //Create an anchor to catch the new reference to the object
+      let vc_first_anchor = document.createElement("span");
+      vc_first_anchor.id = "vc_first_anchor";
+      element.parentElement.insertBefore(vc_first_anchor,element);
+
+      //Change the outerHTML
+      element.outerHTML = markup;
+
+      //Catch the reference back to the changed element
+      let new_element = document.getElementById("vc_first_anchor").nextSibling;
+
+      //Create second anchor
+      let vc_second_anchor = document.createElement("span");
+      vc_second_anchor.id = "vc_second_anchor";
+      new_element.parentElement.insertBefore(vc_second_anchor,new_element);
+
+      //Replace variables
+      for(let attrib of variables){
+        if(attrib[0].charAt(0)=="$"){
+          let regex_rule = new RegExp("\\"+attrib[0], 'g');
+          new_element.outerHTML = new_element.outerHTML.replace(regex_rule, attrib[1]);
+        }
+      }
+
+      //Catch the new revised element
+      let new_revised_element = document.getElementById("vc_second_anchor").nextSibling;
+
+      //Remove anchors
+      vc_first_anchor.parentElement.removeChild(vc_first_anchor);
+      vc_second_anchor.parentElement.removeChild(vc_second_anchor);
+      
+      return new_revised_element;
+    }
 
   /*Auxiliary method. It returns the previous valid sibling of a DOM element,
   so the <vc> element can be substituted by its respective markup.*/
@@ -293,41 +261,19 @@ class VCSearch{
       return x;
   }
 
-
-
-}
-
-var vc_search = new VCSearch();
-vc_search.loadComponent();
-
-
-
-
-
-
-// function parseVC(codeBlock){
-//
-//   var components_path = "vc_components/";
-//   var component_cache = {"vc_script":"","vc_style":"","vc_components":[]};
-//   var loadCount = 0;
-//   var listOfComponents = [];
-//
-//   var vc_array = codeBlock.getElementsByTagName('vc');
-//   for( i=0; i<vc_array.length;i++){
-//     listOfComponents.push(vc_array[i]);
-//   }
-//   loadComponent( listOfComponents, component_cache );
-// }
-// parseVC(document);
-
-
+} //close VCSearch class
 
 //AUXILIARY FUNCTIONS
 
-//Replace all subtrings in a string
-String.prototype.replaceAll = function(search,replace){
-  if (this.indexOf(search)===-1) return this;
-  if (replace.indexOf(search)!==-1) return this;
-  return (this.replace(search,replace)).replaceAll(search,replace);
-}
+// //Replace all subtrings in a string
+// String.prototype.replaceAll = function(search,replace){
+//   if (this.indexOf(search)===-1) return this;
+//   if (replace.indexOf(search)!==-1) return this;
+//   return (this.replace(search,replace)).replaceAll(search,replace);
+// }
+
+//RUN
+
+var vc_search = new VCSearch();
+vc_search.loadComponent();
 
