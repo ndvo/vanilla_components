@@ -112,3 +112,36 @@ A better support for folders that would contain component sets sharing CSS.
 ```html
 <h1>Hello World</h1>
 ```
+**Output**
+```html
+<html>
+<body>
+<h1>Hello World</h1>
+<script src="/vanilla_components/vanilla_components.js" ></script>
+<body>
+</html>
+```
+
+### Variable Usage
+**index.html**
+```html
+<html>
+<body>
+<vc $who="World">hello</vc>
+<script src="/vanilla_components/vanilla_components.js" ></script>
+<body>
+</html>
+```
+**vanilla_components/hello.html**
+```html
+<h1>Hello $who</h1>
+```
+**Output**
+```html
+<html>
+<body>
+<h1>Hello World</h1>
+<script src="/vanilla_components/vanilla_components.js" ></script>
+<body>
+</html>
+```
