@@ -95,6 +95,13 @@ A better support for folders that would contain component sets sharing CSS.
 ## Examples
 
 ### Hello World
+Create the following structure:
+- index.html
+- vc_components/
+- vc_components/hello.html
+- vanilla_components/vanilla_components.js
+
+Then, edit the index.html file.
 
 **index.html**
 
@@ -107,11 +114,14 @@ A better support for folders that would contain component sets sharing CSS.
 </html>
 ```
 
+Now, edit the hello.html file.
+
 **vanilla_components/hello.html**
 
 ```html
 <h1>Hello World</h1>
 ```
+
 **Output**
 ```html
 <html>
@@ -123,6 +133,8 @@ A better support for folders that would contain component sets sharing CSS.
 ```
 
 ### Variable Usage
+Same folder structure, same files.
+
 **index.html**
 ```html
 <html>
@@ -142,6 +154,47 @@ A better support for folders that would contain component sets sharing CSS.
 <body>
 <h1>Hello World</h1>
 <script src="/vanilla_components/vanilla_components.js" ></script>
+<body>
+</html>
+```
+
+### On the fly
+
+
+Same folder structure, same files.
+
+**index.html**
+```html
+<html>
+<body>
+<main id="myid">
+</main>
+<script src="/vanilla_components/vanilla_components.js" ></script>
+<script>
+  var myel=document.getElementById("myid");
+  myel.insertAdjacentHTML('<vc $who="World">hello</vc>');
+  var myvc = new VCSearch(myel);
+  myvc.loadComponent();
+</script>
+<body>
+</html>
+```
+**vanilla_components/hello.html**
+```html
+<h1>Hello $who</h1>
+```
+**Output**
+```html
+<html>
+<body>
+<h1>Hello World</h1>
+<script src="/vanilla_components/vanilla_components.js" ></script>
+<script>
+  var myel=document.getElementById("myid");
+  myel.insertAdjacentHTML('<vc $who="World">hello</vc>');
+  var myvc = new VCSearch(myel);
+  myvc.loadComponent();
+</script>
 <body>
 </html>
 ```
