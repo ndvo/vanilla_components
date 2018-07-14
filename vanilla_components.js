@@ -16,6 +16,7 @@ class VCSearch{
   looking for <vc> tags to inject their markup and cache their code and style.*/
 
   loadComponent (){
+    console.log("step 00");
     var component = this.listOfComponents.pop();
     var name = component.innerHTML;
     var new_component;
@@ -55,6 +56,7 @@ class VCSearch{
     var name = component.innerHTML;
     var inserted_component = null;
     var markup = "";
+
 
     if(htmlDoc){
       //Get markup and add to cache
@@ -234,12 +236,15 @@ class VCSearch{
       new_element.parentElement.insertBefore(vc_second_anchor,new_element);
 
       //Replace variables
+      let regex_rule;
+      let new_element_markup = new_element.outerHTML;
       for(let attrib of variables){
         if(attrib[0].charAt(0)=="$"){
-          let regex_rule = new RegExp("\\"+attrib[0], 'g');
-          new_element.outerHTML = new_element.outerHTML.replace(regex_rule, attrib[1]);
+          regex_rule = new RegExp("\\"+attrib[0], 'g');
+          new_element_markup = new_element_markup.replace(regex_rule, attrib[1]);
         }
       }
+      new_element.outerHTML = new_element_markup;
 
       //Catch the new revised element
       let new_revised_element = document.getElementById("vc_second_anchor").nextSibling;
@@ -247,7 +252,7 @@ class VCSearch{
       //Remove anchors
       vc_first_anchor.parentElement.removeChild(vc_first_anchor);
       vc_second_anchor.parentElement.removeChild(vc_second_anchor);
-      
+
       return new_revised_element;
     }
 
@@ -276,4 +281,3 @@ class VCSearch{
 
 var vc_search = new VCSearch();
 vc_search.loadComponent();
-

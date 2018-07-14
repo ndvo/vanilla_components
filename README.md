@@ -5,32 +5,41 @@ code.
 
 ## HOW DOES IT WORK?
 
+### Basic use
+
 You save components in a folder called vc_components. Each component is an html
-file containing three separate root elements:
-1. the first is the markup (could be a div, button, p, a, whatever you like); 
-1. the second is a style tag for storing the component's CSS; and
-1. the third is a script tag for code related to the component.
+file containing the following root elements in any order:
+
+* a markup tag, which could be a `<div>`, `<button>`, `<p>`, `<a>` or whatever you like; 
+* a `<style>` tag for storing the component's CSS; and
+* a `<script>` tag for code related to the component.
 
 You can call the component using the `<vc>` tag. For example, `<vc>button</vc>`
 would load the button.html component. It substitutes the `<vc>` element by the
 component's markup, then injects the component's css and script.
 
-You can also declare components within components using the `<vc>` tag. This
-allows for the construction of complex features by reusing simple building
-blocks.
+### "Advanced" use
 
-You can pass information down to the component by declaring attributes. For
-example, `<vc class="foo">button</vc>` will pass down `class="foo"`. Speciffically,
-it will add the class to a component that has the class attribute - or if it
-doesn't find any, it will pass the attribute to the first markup element.
+You can declare components within components using the `<vc>` tag. This allows 
+for the construction of complex features by reusing simple building blocks.
 
-You may also pass down variables, by creating an arbitrary attribute starting
-with '$'. For example, `<vc $var="foo">button</vc>` will substitute any
-occurrence of '$var' within the markup to 'foo'.
+You can pass down variables by creating an arbitrary attribute starting
+with '$'. For example, `<vc $name="Mary">button</vc>` will substitute any
+occurrence of '$name' within the markup for 'Mary'.
 
-Finally, once the component is loaded, it calls a construct function called
-`vc_[component's name]()`, which allows you to refine it. It is proposed that
-this function is used to load complex data when needed.
+Once the component is loaded, it calls a construct function called
+`vc_[component's name]()` allowing for more complex components.
+
+Functions imported with components may override custom ones you have in your
+project. That especially important if you plan the overwrite a component's
+function. In order for your custom function to work, you must add the attribute
+'vc'to its `<script>` tag (like `<script vc>`). This will reattach your script,
+giving it precedence.
+
+You can use vc dynamically, attaching new `<vc>` elements to your document. For
+them to be injected into the DOM, though, you'll need to scan the document again.
+This is done by the command `new VCSearch().loadComponent(x)`, `x` being the element 
+you want to scan, or leave blank to scan the whole document.
 
 ## OK, BUT WHY?
 
@@ -49,16 +58,13 @@ VC is vanilla javascript, HTML5 and CSS3, nothing more.
 
 ## CAN I HELP?
 
-Sure, just fire up you IDE and start coding. Contributions are (would be)
-welcome, as long as they don't bloat the code. In particular, the project needs
-components.
+Sure, just fire up you IDE and start coding. Contributions would be welcome, as 
+long as they don't bloat the code. In particular, the project needs components.
 
 ## KNOWN ISSUES
 
-It seems the constructor function is not been passed the correct element. So
-although it runs at the proper time, there are many limits on what you could do
-with it.
-
+The code is not optimized, and it's time for a  revision to make its clearer 
+and faster. 
 
 ## FUTURE FEATURES
 
@@ -69,11 +75,11 @@ only if a component from that collection would be included. This allows
 multiple components in a folder to share css, making it easier to develop
 collections of components.
 
-## INSTALATION AND USAGE
+## INSTALATION
 
 1. Download vanilla_components and unzip it into the root folder of your site.
 1. Create a folder named vc_components in the root of your website
-1. Include the following tag **before** your custom script tags `<script src="/vanilla_components/vanilla_components.js" ></script>`
+1. Include the following to your document `<script src="/vanilla_components/vanilla_components.js" ></script>`
 
 ## Examples
 
