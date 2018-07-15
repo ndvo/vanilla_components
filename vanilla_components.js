@@ -16,7 +16,6 @@ class VCSearch{
   looking for <vc> tags to inject their markup and cache their code and style.*/
 
   loadComponent (){
-    console.log("step 00");
     var component = this.listOfComponents.pop();
     var name = component.innerHTML;
     var new_component;
@@ -31,12 +30,17 @@ class VCSearch{
       //Create new request to load data from static file
       var req = new XMLHttpRequest();
       var vc = this;
+      let vc_search = this;
       req.onreadystatechange = function () {
         var DONE = this.DONE || 4;
         if (this.readyState === DONE ){
-          var parser = new DOMParser();
-          var htmlDoc = parser.parseFromString(this.responseText, "text/html");
-          new_component = vc.processNewComponent(component,htmlDoc);
+          //let parser = new DOMParser();
+          //let raw_markup = vc_search.stripHTML(this.response);
+          //let htmlDoc = parser.parseFromString( raw_markup, "text/html" );
+
+          //new_component = vc.processNewComponent( component, raw_markup );
+
+          vc.processNewComponent( component, vc_search.parseHTML(this.response) );
         }
       }
       var component_path = this.components_path+component.innerHTML+".html";
@@ -46,68 +50,63 @@ class VCSearch{
 
   }
 
+  /*This function will take the raw component file, and extract the markup part,
+  leaving behind script and style. This is importat to deal with table components.*/
+  parseHTML(raw_data){
+
+    let markup_regex = new RegExp("(<script>.*<\/script>|<style>.*<\/style>)","gms");
+    let parsed_data = {"markup": raw_data.replace(markup_regex,"").trim()};
+
+    let style_regex = new RegExp("<style>(.*)<\/style>","gms");
+    let style_match = style_regex.exec(raw_data);
+    if(style_match) parsed_data["style"] = style_match[1];
+
+    let script_regex = new RegExp("<script>(.*)<\/script>","gms");
+    let script_match = script_regex.exec(raw_data);
+    if(script_match) parsed_data["script"] = script_match[1];
+
+    console.log("parsed data ---v");
+    console.log(parsed_data);
+    return parsed_data;
+  }
+
   /*This is the basic function to read the inner data of the <vc> components.
   If it has an htmlDoc, then it is a new component, otherwise we take the
   the basic document from cache.*/
 
   processNewComponent(component, htmlDoc=false){
 
-
     var name = component.innerHTML;
     var inserted_component = null;
     var markup = "";
 
-
-    if(htmlDoc){
-      //Get markup and add to cache
-      //if( htmlDoc.firstChild.childNodes[1].tagName == "BODY"){
-      if( htmlDoc.firstChild.childNodes[1] ){//Is a full html
-        markup = htmlDoc.firstChild.childNodes[1].children[0].outerHTML;
-        this.component_cache[component.innerHTML] = markup;
-      } else {//Is just an element
-        markup = htmlDoc.children[0].outerHTML;
-        this.component_cache[component.innerHTML] = markup;
-      }
-
-    } else {
-      //Get markup
+    if(htmlDoc){ //If it's not a new component
+      markup = htmlDoc["markup"];
+      this.component_cache[component.innerHTML] = markup;
+    } else {    //If it's not a new component
       markup = this.component_cache[name];
     }
 
     //Insert the markup just before the <vc> tag, and clone the attributes
-
     inserted_component = this.switchContents(component,markup);
     this.component_cache["vc_components"].push( [name, inserted_component] );//For us to inject style and code later on
+
     this.addComponentsToQueue( inserted_component );//For us to inject the html ASAP
 
-    // component.insertAdjacentHTML( 'beforebegin', markup );  //Alas, this func doesn't return inserted
-    // inserted_component = this.get_inserted( component );    //So this one gets the immediate element before (which we just inserted)
-    //
-    // console.log("elements",component, inserted_component);
-    // this.cloneAttributes( component, inserted_component );  //Reproduce the attributes on the inserted
-    // //Add the new component to cache and queue it for parsing
-    // this.component_cache["vc_components"].push( [name, inserted_component] ); //For us to inject style and code later on
-    // this.addComponentsToQueue( inserted_component );    //For us to inject the html ASAP
-    // //We add an attribute "vc" so it remembers is was created from a vc tag
-    // //and a disposable "vc_constructor" to keep track of running the function.
     inserted_component.setAttribute("vc", name);    //Stub for possible future use
     inserted_component.setAttribute("vc_c", name);  //We use it to run constructors
-
-
-    //inserted_component.setAttribute("testing", "testing");  //We use it to run constructors
-
 
     // //Now we remove the original <vc> element
     // component.parentNode.removeChild( component );
     //If it is a new component, we must also cache its style and script
     if(htmlDoc){
-      //Cache script
-      if(htmlDoc.getElementsByTagName("script")[0])
-        this.component_cache['vc_script'] += htmlDoc.getElementsByTagName("script")[0].innerHTML;
 
-      //Style is cached.
-      if(htmlDoc.getElementsByTagName("style")[0])
-        this.component_cache['vc_style'] += htmlDoc.getElementsByTagName("style")[0].innerHTML;
+      //Caching style and script
+      if(htmlDoc["style"]) this.component_cache['vc_style'] += htmlDoc["style"];
+      if(htmlDoc["script"]) this.component_cache['vc_script'] += htmlDoc["script"];
+
+      console.log("component_cache---v");
+      console.log(this.component_cache);
 
       //This will keep track of components left even in asynchronous situations.
       if(this.listOfComponents.length>0)
@@ -115,11 +114,16 @@ class VCSearch{
         this.loadComponent();
       this.loadCount -= 1;
       if(this.loadCount==0)
-        //return null;
-        //console.log(">>>: ", component, inserted_component );
-
         this.loadComplements();
     } else {
+      //??? //This will keep track of components left even in asynchronous situations.
+      // if(this.listOfComponents.length>0)
+      //   //return inserted_component;
+      //   this.loadComponent();
+      // this.loadCount -= 1;
+      // if(this.loadCount==0)
+      //   this.loadComplements();
+
       if(this.listOfComponents.length>0) this.loadComponent();
     }
   }
@@ -179,7 +183,7 @@ class VCSearch{
 
     constructComponents(){
       var components = document.querySelectorAll('[vc_c]');
-      var component_list = [];console.log("1",component_list);
+      var component_list = [];
       var constructor_function;
 
       for(var i=0; i<components.length;i++){
@@ -212,8 +216,23 @@ class VCSearch{
 
     }
 
-    switchContents(element,markup){
-      //First we take note of the variables to reinsert
+    switchContents_test(element, markup){
+      let new_element = this.stringToMarkup(markup);
+      console.log(">",new_element);
+
+    }
+
+    /*Will take a string format element and place it instead the <vc> to_element
+    that otiginated it.*/
+    switchContents(element, markup){
+
+      // //Create new component from markup
+      // //let parser = new DOMParser();
+      // let new_component = this.stringToMarkup(markup);//arser.parseFromString( markup, "text/html" );
+      // element.parentElement.insertBefore(new_component, element);
+      // console.log("markup to switch",markup,typeof new_component);
+
+      //We take note of the variables to reinsert
       let variables=[];
       for(let i=0;i< element.attributes.length;i++ ){
         variables.push( [element.attributes[i].name,element.attributes[i].value] )
@@ -253,8 +272,37 @@ class VCSearch{
       vc_first_anchor.parentElement.removeChild(vc_first_anchor);
       vc_second_anchor.parentElement.removeChild(vc_second_anchor);
 
+      //If markup is of td or tr, then return parentNode
+      if(markup.substring(0,3)=="<tr"||markup.substring(0,3)=="<td")
+        new_revised_element = new_revised_element.parentElement;
       return new_revised_element;
     }
+
+  stringToMarkup(string){
+    // let container;
+    //
+    // if(string.substring(0,3)=="<tr"){
+    //   container = document.createElement("table");
+    //   container.insertRow(string);
+    // }
+    // else if(string.substring(0,3)=="<td"){
+    //   let ubercontainer = document.createElement("table");
+    //   container = ubercontainer.insertRow();
+    //   container.insertCell(string);
+    //   console.log(string,"span",container.firstChild);
+    // }
+    // else{
+    //   container = document.createElement("span")
+    //   container.innerHTML = string.trim();
+    // }
+
+    let container = document.createElement("span")
+    container.innerHTML = string.trim();
+
+    console.log("@",container.firstChild)
+
+    return container.firstChild;
+  }
 
   /*Auxiliary method. It returns the previous valid sibling of a DOM element,
   so the <vc> element can be substituted by its respective markup.*/
