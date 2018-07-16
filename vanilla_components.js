@@ -29,25 +29,16 @@ class VCSearch{
       this.loadCount += 1; //We use this to know when we're done, so as to inject style and code
       //Create new request to load data from static file
       var req = new XMLHttpRequest();
-      var vc = this;
-      let vc_search = this;
+      let vc = this;
       req.onreadystatechange = function () {
         var DONE = this.DONE || 4;
-        if (this.readyState === DONE ){
-          //let parser = new DOMParser();
-          //let raw_markup = vc_search.stripHTML(this.response);
-          //let htmlDoc = parser.parseFromString( raw_markup, "text/html" );
-
-          //new_component = vc.processNewComponent( component, raw_markup );
-
-          vc.processNewComponent( component, vc_search.parseHTML(this.response) );
-        }
+        if (this.readyState === DONE )
+          vc.processNewComponent( component, vc.parseHTML(this.response) );
       }
       var component_path = this.components_path+component.innerHTML+".html";
       req.open("GET", component_path, true);
       req.send(null)
     }
-
   }
 
   /*This function will take the raw component file, and extract the markup part,
@@ -65,8 +56,6 @@ class VCSearch{
     let script_match = script_regex.exec(raw_data);
     if(script_match) parsed_data["script"] = script_match[1];
 
-    console.log("parsed data ---v");
-    console.log(parsed_data);
     return parsed_data;
   }
 
@@ -96,35 +85,24 @@ class VCSearch{
     inserted_component.setAttribute("vc", name);    //Stub for possible future use
     inserted_component.setAttribute("vc_c", name);  //We use it to run constructors
 
-    // //Now we remove the original <vc> element
-    // component.parentNode.removeChild( component );
-    //If it is a new component, we must also cache its style and script
     if(htmlDoc){
 
       //Caching style and script
       if(htmlDoc["style"]) this.component_cache['vc_style'] += htmlDoc["style"];
       if(htmlDoc["script"]) this.component_cache['vc_script'] += htmlDoc["script"];
 
-      console.log("component_cache---v");
-      console.log(this.component_cache);
+    }
 
-      //This will keep track of components left even in asynchronous situations.
-      if(this.listOfComponents.length>0)
-        //return inserted_component;
-        this.loadComponent();
+    this.areAllLoaded();
+  }
+
+  /*Checks if all components are loaded. If so, run loadComplements.*/
+  areAllLoaded(){
+    if(this.listOfComponents.length>0){
+      this.loadComponent();
       this.loadCount -= 1;
-      if(this.loadCount==0)
-        this.loadComplements();
     } else {
-      //??? //This will keep track of components left even in asynchronous situations.
-      // if(this.listOfComponents.length>0)
-      //   //return inserted_component;
-      //   this.loadComponent();
-      // this.loadCount -= 1;
-      // if(this.loadCount==0)
-      //   this.loadComplements();
-
-      if(this.listOfComponents.length>0) this.loadComponent();
+      this.loadComplements();
     }
   }
 
@@ -143,7 +121,6 @@ class VCSearch{
       this.listOfComponents.push(new_components[i]);
     }
   }
-
 
   /*Injects cached style to the top of the document.*/
   injectCSS(){
@@ -203,7 +180,6 @@ class VCSearch{
     /*Clones the characteristics (attributes) from original <vc> element to corresponding
     injected components. This process have some peculiar cases: please refer to doc.txt.*/
     cloneAttributes(from_element,to_element){
-      //console.log("to el",from_element,to_element);
       let attribute;
       for(let i=0;i<from_element.attributes.length;i++){
         attribute = from_element.attributes[i];
@@ -211,26 +187,12 @@ class VCSearch{
           let regex_rule = new RegExp("\\"+attribute.name, 'g');
           //to_element.outerHTML = to_element.outerHTML.replace(regex_rule, attribute.value);
         }
-      }console.log("to el after",to_element,to_element.outerHTML);
-      console.log(document);
-
-    }
-
-    switchContents_test(element, markup){
-      let new_element = this.stringToMarkup(markup);
-      console.log(">",new_element);
-
+      }
     }
 
     /*Will take a string format element and place it instead the <vc> to_element
     that otiginated it.*/
     switchContents(element, markup){
-
-      // //Create new component from markup
-      // //let parser = new DOMParser();
-      // let new_component = this.stringToMarkup(markup);//arser.parseFromString( markup, "text/html" );
-      // element.parentElement.insertBefore(new_component, element);
-      // console.log("markup to switch",markup,typeof new_component);
 
       //We take note of the variables to reinsert
       let variables=[];
@@ -278,52 +240,7 @@ class VCSearch{
       return new_revised_element;
     }
 
-  stringToMarkup(string){
-    // let container;
-    //
-    // if(string.substring(0,3)=="<tr"){
-    //   container = document.createElement("table");
-    //   container.insertRow(string);
-    // }
-    // else if(string.substring(0,3)=="<td"){
-    //   let ubercontainer = document.createElement("table");
-    //   container = ubercontainer.insertRow();
-    //   container.insertCell(string);
-    //   console.log(string,"span",container.firstChild);
-    // }
-    // else{
-    //   container = document.createElement("span")
-    //   container.innerHTML = string.trim();
-    // }
-
-    let container = document.createElement("span")
-    container.innerHTML = string.trim();
-
-    console.log("@",container.firstChild)
-
-    return container.firstChild;
-  }
-
-  /*Auxiliary method. It returns the previous valid sibling of a DOM element,
-  so the <vc> element can be substituted by its respective markup.*/
-  get_inserted(n) {
-      var x = n.previousSibling;
-      while (x.nodeType != 1) {
-          x = x.previousSibling;
-      }
-      return x;
-  }
-
 } //close VCSearch class
-
-//AUXILIARY FUNCTIONS
-
-// //Replace all subtrings in a string
-// String.prototype.replaceAll = function(search,replace){
-//   if (this.indexOf(search)===-1) return this;
-//   if (replace.indexOf(search)!==-1) return this;
-//   return (this.replace(search,replace)).replaceAll(search,replace);
-// }
 
 //RUN
 
