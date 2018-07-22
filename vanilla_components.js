@@ -17,6 +17,10 @@ class VCSearch{
 
   loadComponent (){
     var component = this.listOfComponents.pop();
+    if (component==undefined){
+      console.log("Component not found");
+      return;
+    }
     var name = component.innerHTML;
     var new_component;
 
@@ -45,14 +49,14 @@ class VCSearch{
   leaving behind script and style. This is importat to deal with table components.*/
   parseHTML(raw_data){
 
-    let markup_regex = new RegExp("(<script>.*<\/script>|<style>.*<\/style>)","gms");
+    let markup_regex = new RegExp('(<script>.*<\/script>|<style>.*<\/style>)',"gmi");
     let parsed_data = {"markup": raw_data.replace(markup_regex,"").trim()};
 
-    let style_regex = new RegExp("<style>(.*)<\/style>","gms");
+    let style_regex = new RegExp("<style>(.*)<\/style>","gmi");
     let style_match = style_regex.exec(raw_data);
     if(style_match) parsed_data["style"] = style_match[1];
 
-    let script_regex = new RegExp("<script>(.*)<\/script>","gms");
+    let script_regex = new RegExp("<script>(.*)<\/script>","gmi");
     let script_match = script_regex.exec(raw_data);
     if(script_match) parsed_data["script"] = script_match[1];
 
